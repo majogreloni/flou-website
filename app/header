@@ -1,0 +1,94 @@
+'use client'
+
+import Image from 'next/image'
+import { useState, useEffect } from 'react'
+import { Menu } from 'lucide-react'
+
+export default function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('')
+
+  const navItems = [
+    { href: "#inicio", label: "Inicio" },
+    { href: "#que-hacemos", label: "¿Qué hacemos?" },
+    { href: "#como-lo-hacemos", label: "¿Cómo lo hacemos?" },
+    { href: "#contacto", label: "Contacto" }
+  ]
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 100; // Ajuste para el header fijo
+
+      const currentSection = navItems.find(item => {
+        const element = document.querySelector(item.href);
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          return scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight;
+        }
+        return false;
+      });
+
+      if (currentSection) {
+        setActiveSection(currentSection.href.slice(1));
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Llamada inicial para establecer la sección activa
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleClick = (href: string) => {
+    setIsMenuOpen(false);
+    const element = document.querySelector(href);
+    if (element) {
+      const headerOffset = 80; // Ajusta este valor según la altura de tu header
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
+
+  return (
+    <header className="bg-[#F2F0E2] text-[#1F3033] py-4 md:py-6 px-4 md:px-6 shadow-md fixed top-0 left-0 right-0 z-50">
+      <div className="container mx-auto flex justify-between items-center">
+        <a href="#inicio" className="flex items-center" onClick={(e) => { e.preventDefault(); handleClick('#inicio'); }}>
+          <Image
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Flou-Logo_Fondo%20oscuro-2-h9ZkNDCqe20gkaC5s2VhJVjTT3VC2M.png"
+            alt="Logo de Flou"
+            width={200}
+            height={80}
+            className="mr-2 w-32 md:w-40 mb-2 md:mb-0"
+          />
+        </a>
+        <nav className={`${isMenuOpen ? 'block' : 'hidden'} md:block`}>
+          <ul className="md:flex space-y-2 md:space-y-0 md:space-x-6 font-['Inter'] text-sm md:text-base font-light">
+            {navItems.map((item, index) => (
+              <li key={index}>
+                <a 
+                  href={item.href}
+                  className={`hover:text-[#8DE1AB] transition-colors duration-300 ${activeSection === item.href.slice(1) ? 'text-[#8DE1AB]' : ''}`}
+                  onClick={(e) => { e.preventDefault(); handleClick(item.href); }}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <button 
+          className="md:hidden text-[#1F3033]"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
+        >
+          <Menu size={24} />
+        </button>
+      </div>
+    </header>
+  )
+}
